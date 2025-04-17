@@ -1,0 +1,3 @@
+WebGui.HttpPort: 8889
+WebGui.RootUi5Path: /mnt/c/CMS/root/ui5
+WebEve.DisableShow: 1

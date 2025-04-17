@@ -948,6 +948,52 @@ sap.ui.define(['rootui5/eve7/lib/EveManager'], function (EveManager)
          return line;
       }
 
+                  //==============================================================================
+      // makeShower
+      //==============================================================================
+
+      makeShower(shower, rnr_data)
+      {
+
+      console.log("shower data", shower, "rnr_data", rnr_data);
+
+         
+         let lineStrip = new RC.ZSplines(
+            shower.fPoints,
+            shower.fTime,
+            shower.fEnergy,
+            shower.fSamples,
+            0.08,
+            shower.fMinTime,
+            shower.fMaxTime,
+            {},
+            {},
+            false, 
+            true); 
+
+            lineStrip.setAnimationPattern(0.0);
+            lineStrip.setColors(true);
+            lineStrip.drawOutline = false;
+            lineStrip.material.transparent = false;
+            lineStrip.material.opacity = 1.0;
+            lineStrip.pickable = false;
+
+            lineStrip.material.setUniform("imp_check", false);
+            lineStrip.material.setUniform("imp_id", 2.0);
+
+            lineStrip.setTimeLimitMin(0.0);
+            lineStrip.setTimeLimitMax(200);
+            lineStrip.setEnergyLimitMin(0.0);
+            lineStrip.setEnergyLimitMax(200);
+            //lineStrip.setWidth(this.trackWidth);
+
+      console.log("shower data lineStrip", lineStrip);
+
+      return lineStrip;
+      }
+
+
+
       //==============================================================================
       // makeZText
       //==============================================================================
@@ -1040,6 +1086,8 @@ sap.ui.define(['rootui5/eve7/lib/EveManager'], function (EveManager)
          mesh.add(line1);
          mesh.add(line2);
          this.RcPickable(jet, mesh, false);
+
+         console.log("geobody", geo_body);
 
          return mesh;
       }

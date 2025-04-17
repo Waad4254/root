@@ -220,6 +220,9 @@
 #pragma link C++ class ROOT::Experimental::REveJetCone+;
 #pragma link C++ class ROOT::Experimental::REveJetConeProjected+;
 
+// REveShower
+#pragma link C++ class ROOT::Experimental::REveShower+;
+
 // REveText
 #pragma link C++ class ROOT::Experimental::REveText+;
 

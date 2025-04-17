@@ -32,6 +32,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     ROOT/REveGeoTopNode.hxx
     ROOT/REveGluTess.hxx
     ROOT/REveJetCone.hxx
+    ROOT/REveShower.hxx
     ROOT/REveEllipsoid.hxx
     ROOT/REveLine.hxx
     ROOT/REveManager.hxx
@@ -96,6 +97,7 @@ ROOT_STANDARD_LIBRARY_PACKAGE(ROOTEve
     src/REveGeoTopNode.cxx
     src/REveGluTess.cxx
     src/REveJetCone.cxx
+    src/REveShower.cxx
     src/REveEllipsoid.cxx
     src/REveLine.cxx
     src/REveManager.cxx

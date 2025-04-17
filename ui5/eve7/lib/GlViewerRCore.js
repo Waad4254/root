@@ -1,3 +1,7 @@
+(async () => {
+   SPLINES_CONT = (await import("./SplinesController.js"));
+})();
+
 sap.ui.define([
    'rootui5/eve7/lib/GlViewer',
    'rootui5/eve7/lib/EveElementsRCore'
@@ -7,6 +11,8 @@ sap.ui.define([
 
    let RC;
    let datGUI;
+
+   let SPLINES_CONT;
 
    class GlViewerRCore extends GlViewer {
 
@@ -74,13 +80,31 @@ sap.ui.define([
          } else {
             this.bootstrap();
          }
+
+         if (!SPLINES_CONT) {
+            import("./SplinesController.js").then((module) => {
+               if (this._logLevel >= 2)
+                  console.log("GlViewerRCore.onInit - SplinesController.js loaded");
+               
+               SPLINES_CONT = module;
+               SPLINES_CONT.initGUI();
+               SPLINES_CONT.setSchematicView();
+            });
+         } else {
+            SPLINES_CONT.initGUI();
+            SPLINES_CONT.setSchematicView();
+         }
       }
 
       bootstrap()
       {
+         
+
          RC.GLManager.sCheckFrameBuffer = false;
          RC.Object3D.sDefaultPickable = false;
          RC.PickingShaderMaterial.DEFAULT_PICK_MODE = RC.PickingShaderMaterial.PICK_MODE.UINT;
+
+         this.IOR = false;
 
          this.createRCoreRenderer();
 
@@ -163,7 +187,7 @@ sap.ui.define([
          }
 
          // always use black clear color except in tone map
-         this.renderer.clearColor = "#00000000";
+         this.renderer.clearColor = "#ffffff";
          this.scene = new RC.Scene();
          this.overlay_scene = new RC.Scene();
 
@@ -196,6 +220,11 @@ sap.ui.define([
             this.lights.add(light_3d_ctor(0x8888aa, l_int, 0, 1, l_args)); // B
             this.lights.add(light_3d_ctor(0xaaaa66, l_int, 0, 1, l_args)); // Y
             this.lights.add(light_3d_ctor(0x666666, l_int, 0, 1, l_args)); // gray, bottom
+
+            l_int = 10;
+            this.light_d = new RC.DirectionalLight(new RC.Color(0.9, 0.6, 0.3), 1.0);
+            this.light_d.position = new RC.Vector3(-1, 1, 0);
+            this.lights.add(this.light_d); 
 
             // Lights are positioned in resetRenderer.
 
@@ -266,7 +295,7 @@ sap.ui.define([
          {
             return this.pick_instance_low_level(this.ovlpqueue, state);
          }
-      }
+      }  
 
       setupEventHandlers()
       {
@@ -350,6 +379,90 @@ sap.ui.define([
          dome.addEventListener("mousemove", function(event) {
             glc.handleOverlayMouseMove(event);
          });
+      
+
+         //************************************************
+         
+         function iterateSceneR(object, callback) {
+            if (object === null || object === undefined) {
+                return;
+            }
+        
+            if (object.children.length > 0) {
+                for (let i = 0; i < object.children.length; i++) {
+                    iterateSceneR(object.children[i], callback);
+                }
+            }
+        
+            callback(object);
+        }
+
+         window.addEventListener("valueChanged", (event) => {
+            //console.log("Variable changed:", event.detail);
+            this.request_render();
+        });
+
+         window.addEventListener("clusterColor", (event) => {
+            //console.log("Variable changed:", event.detail);
+
+            iterateSceneR(this.rqt.scene, function(object){
+               if (object instanceof RC.ZSplines && object.importance == event.detail[0]){
+                  //console.log("clusterColor", event.detail[0], event.detail[1]);
+                  object.material.setUniform("cluster_color", [event.detail[1].r, event.detail[1].g, event.detail[1].b]);         
+               }
+           });
+
+            this.request_render();
+         });
+
+        window.addEventListener("gaussianChanged", (event) => {
+         //console.log("Variable changed:", event.detail);
+         this.rqt.RP_GaussH_Splines_mat.addSBValue("RADIUS", event.detail[0] + 1.0);
+         this.rqt.RP_GaussV_Splines_mat.addSBValue("RADIUS", event.detail[0] + 1.0);
+
+         
+         this.rqt.RP_GaussH_Splines_mat.setUniform("offset[0]", event.detail[1]);
+         this.rqt.RP_GaussH_Splines_mat.setUniform("weight[0]", event.detail[2]);
+
+         this.rqt.RP_GaussV_Splines_mat.setUniform("offset[0]", event.detail[1]);
+         this.rqt.RP_GaussV_Splines_mat.setUniform("weight[0]", event.detail[2]);
+
+         this.request_render();
+     });
+
+         window.addEventListener("deleteSplines", (event) => {
+            console.log("deleteSplines");
+
+            iterateSceneR(this.rqt.scene, function(object){
+               if (object instanceof RC.ZSplines ){
+                  console.log("deleteSplines if", object);
+                  object.parent.remove(object);
+               }
+           });
+
+         });
+
+         window.addEventListener("AddSplines", (event) => {
+            console.log("AddSplines", event.detail);
+            this.rqt.scene.add(event.detail[0]);
+            this.rqt.scene.add(event.detail[1]);
+            this.rqt.scene.add(event.detail[2]);
+            this.rqt.scene.add(event.detail[3]);
+
+            this.request_render();
+         });
+
+         window.addEventListener("IOR", (event) => {
+            //console.log("Variable changed:", event.detail);
+            this.IOR = true;
+            this.request_render();
+        });
+
+        window.addEventListener("NormalRender", (event) => {
+         //console.log("Variable changed:", event.detail);
+         this.IOR = false;
+         this.request_render();
+     });
 
          // Key-handlers go on window ...
 
@@ -622,6 +735,12 @@ sap.ui.define([
 
          this.rqt.render_begin(true);
 
+         if (SPLINES_CONT && SPLINES_CONT.fpsGraph)
+            SPLINES_CONT.fpsGraph.begin();
+
+         if (SPLINES_CONT)
+            SPLINES_CONT.setSplinesUniform(this.rqt);
+
          // Render outlines for active selections.
 
          for (let sel_id of this._selection_list)
@@ -667,8 +786,20 @@ sap.ui.define([
 
             this.rqt.RP_GBuffer.obj_list = [];
          }
-
+         
          this.rqt.render_main_and_blend_outline();
+
+         if(this.IOR)
+         {
+            this.rqt.render_Splines_IOR_and_blend_it(3);
+         }
+         else 
+         {
+            this.rqt.render_Splines_and_blend_it();
+         }
+
+
+
 
          // XXXX here add rendering of overlay, e.g.:
          if (this.rqt.queue.used_fail_count == 0 && this.overlay_scene.children.length > 0) {
@@ -689,11 +820,27 @@ sap.ui.define([
 
          this.rqt.render_end();
 
+         if (SPLINES_CONT && SPLINES_CONT.fpsGraph)
+            SPLINES_CONT.fpsGraph.end();
+
+
          if (this.rqt.queue.used_fail_count > 0) {
             if (this._logLevel >= 2)
                console.log("GlViewerRCore render: not all programs compiled -- setting up render timer");
             setTimeout(this.render.bind(this), 200);
          }
+         else 
+         {
+            if(SPLINES_CONT.timeAnimate || SPLINES_CONT.animate)
+               window.requestAnimationFrame(() => { this.render() });
+         }
+
+
+
+
+         
+         //if (SPLINES_CONT)
+            //window.requestAnimationFrame(() => { this.render() });
 
          // if (this.controller.kind === "3D")
          //    window.requestAnimationFrame(this.render.bind(this));
