@@ -13,9 +13,7 @@ export let PARAMS;
 // GUI attributes
 export let GUIActive = false;
 export let lineStrip;
-export let splineCluster0;
-export let splineCluster1;
-export let splineCluster2;
+export let splineCluster = [];
 export let splineCluster3;
 export let splineCluster4;
 export let limitT = 0.0;
@@ -41,14 +39,6 @@ export let colorTex;
 export let finalColorTex;
 export let samplePerTrack = 100;
 
-export let energy_cut_low_l = 0.0;
-export let energy_cut_low_h = 0.1;
-
-export let energy_cut_med_l = 0.1;
-export let energy_cut_med_h = 1.0;
-
-export let energy_cut_high_l = 1.0;
-export let energy_cut_high_h = max_E + 1;
 export let fpsGraph;
 
 export let timeFolder;
@@ -71,11 +61,18 @@ export let byPDG;
 export let bySubTree;
 export let rqt = null;
 
+export let light_ambient = true;
+export let light_diffuse = true;
+export let light_specular = true;
+export let ambientOcc = true;
+
+export let animation = false;
+export let energyCrop = max_E;
+export let gap = 1;
+export let fill = 2;
 
 export function initGUI() {
     console.log("GUI Initialized!");
-
-    loadData();
 
     var viewer = document.getElementById("EveViewer9");
 
@@ -94,16 +91,12 @@ export function initGUI() {
     pane.element.style.position = "fixed";
     pane.element.style.right = "3px";
     pane.element.style.top = "70px";
+    pane.element.style.overflow = "visible";  // Allow overflow so buttons are visible
+
+
 
 
     document.getElementById("EveViewer9").appendChild(pane.element);
-    
-
-    // // Wait a bit for it to render, then resize
-    // setTimeout(() => {
-    //     pane.element.style.position = "fixed";
-    //     pane.element.style.right = "0px";
-    // }, 100);
 
     pane.on('change', (ev) => {
         GUIActive = true;
@@ -137,18 +130,24 @@ export function initGUI() {
         timeCrop:  max_T,
         energyCrop:  max_E,
         masked: false,
+        cluster0: true,
+        cluster1: true,
+        cluster2: true,
+        cluster3: true,
+        cluster4: true,
+        
 
-        energyIntervalCluster0: { min:  energy_cut_low_l, max:  energy_cut_low_h },
-        energyIntervalCluster1: { min:  energy_cut_med_l, max:  energy_cut_med_h },
-        energyIntervalCluster2: { min:  energy_cut_high_l, max:  energy_cut_high_h },
-        energyIntervalCluster3: { min:  energy_cut_high_l, max:  energy_cut_high_h },
-        energyIntervalCluster4: { min:  energy_cut_high_l, max:  energy_cut_high_h },
+        energyIntervalCluster0: { min:  0.0,  max: 0.01 },
+        energyIntervalCluster1: { min:  0.01, max: 0.03 },
+        energyIntervalCluster2: { min:  0.03, max: 0.05 },
+        energyIntervalCluster3: { min:  0.05, max: 0.1 },
+        energyIntervalCluster4: { min:  0.1,  max: max_E },
 
-        clusterColor0: {r: 1, g: 0, b: 0},
-        clusterColor1: {r: 0, g: 1, b: 0},
-        clusterColor2: {r: 0, g: 0, b: 1},
-        clusterColor3: {r: 0, g: 0, b: 1},
-        clusterColor4: {r: 0, g: 0, b: 1},
+        clusterColor0: {r: 0.835, g: 0.243, b: 0.310},   // Strong red-pink
+        clusterColor1: {r: 0.992, g: 0.705, b: 0.384},   // Vivid orange
+        clusterColor2: {r: 0.580, g: 0.823, b: 0.310},   // Bright green
+        clusterColor3: {r: 0.129, g: 0.588, b: 0.953},   // Sky blue
+        clusterColor4: {r: 0.596, g: 0.388, b: 0.710},   // Purple
 
         radius: 3,
         sigma: 1,
@@ -194,31 +193,11 @@ export function initGUI() {
             masksFolder.hidden = !masksFolder.hidden;
              masked = ev.value;
             if ( masked) {
-                /*
-                 color_masked = "color_masked";
-                 position_masked = "position_masked";
-                 normal_masked = "normal_masked";
-                 depth_masked = "depth_masked";
-                 normalTheta_masked = "normalTheta_masked";
-                 binormal_masked = "binormal_masked";  
-                 */
                  window.dispatchEvent(new CustomEvent("IOR", { detail: "IOR" }));
             }
             else {
-                 /*
-                 color_masked = "color";
-                 position_masked = "position";
-                 normal_masked = "normal";
-                 depth_masked = "depthDefaultDefaultMaterials";
-                 normalTheta_masked = "normalTheta";
-                 binormal_masked = "binormal";
-                 */
                  window.dispatchEvent(new CustomEvent("NormalRender", { detail: "NormalRender" }));
-            }
-
-           //console.log("Gaussian Test: 3, 1", gaussianKernel(3, 1));
-    
-
+            }    
         });
 
         const masksFolder = IORFolder.addFolder({
@@ -227,6 +206,86 @@ export function initGUI() {
             hidden: true,
         });
 
+        masksFolder.addBinding( PARAMS, 'cluster0',
+        { label: 'cluster0' })
+        .on('change', (ev) => {
+            cluster0Folder.hidden = !cluster0Folder.hidden;
+            window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);   
+        });
+
+        masksFolder.addBinding( PARAMS, 'cluster1',
+        { label: 'cluster1' })
+        .on('change', (ev) => {
+            cluster1Folder.hidden = !cluster1Folder.hidden;
+            window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);    
+        });
+
+        masksFolder.addBinding( PARAMS, 'cluster2',
+        { label: 'cluster2' })
+        .on('change', (ev) => {
+            cluster2Folder.hidden = !cluster2Folder.hidden;
+            window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);    
+        });
+
+        masksFolder.addBinding( PARAMS, 'cluster3',
+        { label: 'cluster3' })
+        .on('change', (ev) => {
+            cluster3Folder.hidden = !cluster3Folder.hidden;
+            window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);   
+        });
+
+        masksFolder.addBinding( PARAMS, 'cluster4',
+        { label: 'cluster4' })
+        .on('change', (ev) => {
+            cluster4Folder.hidden = !cluster4Folder.hidden;
+            window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);   
+        });
+/*
         masksFolder.addBlade({
             view: 'list',
             label: 'Masks',
@@ -257,15 +316,42 @@ export function initGUI() {
 
         });
 
+*/
 
-        masksFolder.addBinding( PARAMS, 'energyIntervalCluster0', {
+
+
+    const cluster0Folder = masksFolder.addFolder({
+        title: 'Cluster0 Settings',
+        expanded: false,
+        hidden: false,
+    });
+    const cluster1Folder = masksFolder.addFolder({
+        title: 'Cluster1 Settings',
+        expanded: false,
+        hidden: false,
+    });
+    const cluster2Folder = masksFolder.addFolder({
+        title: 'Cluster2 Settings',
+        expanded: false,
+        hidden: false,
+    });
+    const cluster3Folder = masksFolder.addFolder({
+        title: 'Cluster3 Settings',
+        expanded: false,
+        hidden: false,
+    });
+    const cluster4Folder = masksFolder.addFolder({
+        title: 'Cluster4 Settings',
+        expanded: false,
+        hidden: false,
+    });
+
+    cluster0Folder.addBinding( PARAMS, 'energyIntervalCluster0', {
             min: -1.0,
-            max:  max_E,
-            step: 0.001,
-            label: 'Low Filter'
+            max:  max_E + 1,
+            step: 0.0001,
+            label: 'Cluster0'
         }).on('change', (ev) => {
-             energy_cut_low_l = ev.value.min;
-             energy_cut_low_h = ev.value.max;
 
              window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
 
@@ -280,7 +366,7 @@ export function initGUI() {
                  
         });
 
-        masksFolder.addBinding(PARAMS, 'clusterColor0', {
+        cluster0Folder.addBinding(PARAMS, 'clusterColor0', {
             color: {type: 'float'},
           }).on('change', (ev) => {
 
@@ -288,14 +374,12 @@ export function initGUI() {
             
           });
 
-        masksFolder.addBinding( PARAMS, 'energyIntervalCluster1', {
+          cluster1Folder.addBinding( PARAMS, 'energyIntervalCluster1', {
             min: -1.0,
-            max:  max_E,
-            step: 0.001,
-            label: 'Medium Filter'
+            max:  max_E + 1,
+            step: 0.0001,
+            label: 'Cluster1'
         }).on('change', (ev) => {
-             energy_cut_med_l = ev.value.min;
-             energy_cut_med_h = ev.value.max;
 
              window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
 
@@ -309,7 +393,7 @@ export function initGUI() {
                  getSubTreeAtNode(1);
                  
         });
-        masksFolder.addBinding(PARAMS, 'clusterColor1', {
+        cluster1Folder.addBinding(PARAMS, 'clusterColor1', {
             color: {type: 'float'},
           }).on('change', (ev) => {
 
@@ -317,14 +401,12 @@ export function initGUI() {
             
           });
 
-        masksFolder.addBinding( PARAMS, 'energyIntervalCluster2', {
+          cluster2Folder.addBinding( PARAMS, 'energyIntervalCluster2', {
             min: -1.0,
-            max:  max_E,
-            step: 0.001,
-            label: 'High Filter'
+            max:  max_E + 1,
+            step: 0.0001,
+            label: 'Cluster2'
         }).on('change', (ev) => {
-             energy_cut_high_l = ev.value.min;
-             energy_cut_high_h = ev.value.max;
 
              window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
 
@@ -339,11 +421,67 @@ export function initGUI() {
                  
         });
 
-        masksFolder.addBinding(PARAMS, 'clusterColor2', {
+        cluster2Folder.addBinding(PARAMS, 'clusterColor2', {
             color: {type: 'float'},
           }).on('change', (ev) => {
 
             window.dispatchEvent(new CustomEvent("clusterColor", { detail: [2, ev.value] }));
+
+          });
+
+          cluster3Folder.addBinding( PARAMS, 'energyIntervalCluster3', {
+            min: -1.0,
+            max:  max_E + 1,
+            step: 0.0001,
+            label: 'Cluster3'
+        }).on('change', (ev) => {
+
+             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);
+                 
+        });
+
+        cluster3Folder.addBinding(PARAMS, 'clusterColor3', {
+            color: {type: 'float'},
+          }).on('change', (ev) => {
+
+            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [3, ev.value] }));
+
+          });
+
+          cluster4Folder.addBinding( PARAMS, 'energyIntervalCluster4', {
+            min: -1.0,
+            max:  max_E + 1,
+            step: 0.0001,
+            label: 'Cluster4'
+        }).on('change', (ev) => {
+
+             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+
+            if( PARAMS.bySubTree &&  PARAMS.byPDG)
+                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
+            else if( PARAMS.bySubTree)
+                 getSubTreeAtNode( PARAMS.subTree);
+            else if( PARAMS.byPDG)
+                 getSubTreeAtNode(1, true,  PARAMS.pdg);
+            else
+                 getSubTreeAtNode(1);
+                 
+        });
+
+        cluster4Folder.addBinding(PARAMS, 'clusterColor4', {
+            color: {type: 'float'},
+          }).on('change', (ev) => {
+
+            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [4, ev.value] }));
 
           });
 
@@ -357,20 +495,6 @@ export function initGUI() {
             const [offset_gaussian, weight_gaussian] = gaussianKernel(ev.value,  PARAMS.sigma);
 
             window.dispatchEvent(new CustomEvent("gaussianChanged", { detail: [ev.value, offset_gaussian, weight_gaussian] }));
-
-            /*
-             gb.addSBValue("RADIUS", ev.value + 1.0);
-             gb_2.addSBValue("RADIUS", ev.value + 1.0);
-
-            //console.log("Gaussian Test: ", ev.value,  PARAMS.sigma);
-            //console.log("Gaussian Test: ", offset_gaussian, weight_gaussian);
-
-             gb.setUniform("offset[0]", offset_gaussian);
-             gb.setUniform("weight[0]", weight_gaussian);
-
-             gb_2.setUniform("offset[0]", offset_gaussian);
-             gb_2.setUniform("weight[0]", weight_gaussian);
-             */
         });
 
         masksFolder.addBinding( PARAMS, 'sigma', {
@@ -383,67 +507,33 @@ export function initGUI() {
 
             window.dispatchEvent(new CustomEvent("gaussianChanged", { detail: [PARAMS.radius, offset_gaussian, weight_gaussian] }));
 
-
-            //console.log("Gaussian Test: ",  PARAMS.radius, ev.value);
-            //console.log("Gaussian Test: ", offset_gaussian, weight_gaussian);
-/*
-             gb.setUniform("offset[0]", offset_gaussian);
-             gb.setUniform("weight[0]", weight_gaussian);
-
-             gb_2.setUniform("offset[0]", offset_gaussian);
-             gb_2.setUniform("weight[0]", weight_gaussian);
-             */
-        });
-/*
-    lightingFolder.addBinding( PARAMS, 'transparent',
-        { label: 'transparent' })
-        .on('change', (ev) => {
-            opacityFolder.hidden = !opacityFolder.hidden;
-             transparent = ev.value;
-
-            
-             lineStrip.material.transparent =  transparent;
-
         });
 
-    const opacityFolder = lightingFolder.addFolder({
-        title: 'Opacity Settings',
-        expanded: true,
-        hidden: true,
-    });
-
-    opacityFolder.addBinding( PARAMS, 'opacity',
-        { label: 'Opacity', min: 0, max: 1, step: 0.01 })
-        .on('change', (ev) => {
-             opacity = ev.value;
-            
-             lineStrip.material.opacity =  opacity;
-             lineStrip.material.setUniform("manualOpacity", true);
-
-            
-        });
-*/
     lightingFolder.addBinding( PARAMS, 'light_ambient',
         { label: 'light_ambient' })
         .on('change', (ev) => {
+            light_ambient = ev.value;
             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
 
     lightingFolder.addBinding( PARAMS, 'light_diffuse',
         { label: 'light_diffuse' })
         .on('change', (ev) => {
+            light_diffuse = ev.value;
             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
 
     lightingFolder.addBinding( PARAMS, 'light_specular',
         { label: 'light_specular' })
         .on('change', (ev) => {
+            light_specular = ev.value;
             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
 
     lightingFolder.addBinding( PARAMS, 'ambientOcc',
         { label: 'ambientOcc' })
         .on('change', (ev) => {
+            ambientOcc = ev.value;
             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
 
@@ -462,6 +552,7 @@ export function initGUI() {
         }).on('change', (ev) => {
             animationSubFolder.hidden = !animationSubFolder.hidden;
              animate = ev.value;
+             animation = ev.value;
              window.dispatchEvent(new CustomEvent("valueChanged", { detail: animate }));
         });
 
@@ -500,12 +591,14 @@ export function initGUI() {
     animationSubFolder.addBinding( PARAMS, 'gap',
         { label: 'Gap Size', min: 1, max: 5, step: 1 })
         .on('change', (ev) => {
-             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
+            gap = ev.value;
+            window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
     animationSubFolder.addBinding( PARAMS, 'fill',
         { label: 'Segment Size', min: 1, max: 5, step: 1 })
         .on('change', (ev) => {
-             window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
+            fill = ev.value;
+            window.dispatchEvent(new CustomEvent("valueChanged", { detail: ev.value }));
         });
     animationSubFolder.addBinding( PARAMS, 'speed',
         { label: 'Speed', min: 1, max: 99, step: 1, row: 6 })
@@ -529,9 +622,9 @@ export function initGUI() {
             if (!ev.value) {
                 
                  lineStrip.setColors( colors);
-                 splineCluster2.setColors( colors);
-                 splineCluster1.setColors( colors);
-                 splineCluster0.setColors( colors);
+                 splineCluster[2].setColors( colors);
+                 splineCluster[1].setColors( colors);
+                 splineCluster[0].setColors( colors);
 
 
             }
@@ -720,7 +813,7 @@ energyFolder.addBinding( PARAMS, 'energyCrop', {
     step: 0.001,
     label: 'Energy Max Crop'
 }).on('change', (ev) => {
-    
+    energyCrop = ev.value;
     energyFolder.remove( energyIntervalBiding);
 
      energyIntervalBiding = energyFolder.addBinding( PARAMS, 'energyInterval', {
@@ -792,6 +885,101 @@ pane.addBinding( PARAMS, 'trackWidth',
 
     });
 
+    const queryBuilderFolder = filteringFolder.addFolder({
+        title: 'Custom Filter Builder',
+        expanded: true,
+    });
+    
+    const queryState = {
+        rules: [],
+    };
+    
+    const fields = {
+        energy: 'energy',
+        time: 'time',
+        pdg: 'pdg',
+    };
+    
+    const operators = {
+        equals: 'equals',
+        'greater than': 'greater than',
+        'less than': 'less than',
+    };
+    
+    function addRule() {
+        const rule = {
+            field: 'energy',
+            operator: 'equals',
+            value: '',
+        };
+    
+        queryState.rules.push(rule);
+    
+        const ruleFolder = queryBuilderFolder.addFolder({
+            title: `Rule ${queryState.rules.length}`,
+            expanded: true,
+        });
+    
+        ruleFolder.addBinding(rule, 'field', {
+            options: fields,
+            label: 'Field',
+        });
+    
+        ruleFolder.addBinding(rule, 'operator', {
+            options: operators,
+            label: 'Operator',
+        });
+    
+        ruleFolder.addBinding(rule, 'value', {
+            label: 'Value',
+        });
+    
+        ruleFolder.addButton({ label: 'Remove', title: 'Remove' }).on('click', () => {
+            queryBuilderFolder.remove(ruleFolder);
+            const idx = queryState.rules.indexOf(rule);
+            if (idx > -1) queryState.rules.splice(idx, 1);
+        });
+
+        // Ensure buttons inside the pane are visible
+        const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
+        Array.from(buttons).forEach(button => {
+
+            button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
+            button.style.position = 'relative';  // Fixed position for the container
+
+        });
+    }
+    
+    
+    // Add initial rule
+    addRule();
+    
+    // ✅ THESE BUTTONS SHOULD BE VISIBLE
+    queryBuilderFolder.addButton({ title: 'Add Rule' }).on('click', () => addRule());
+    
+    queryBuilderFolder.addButton({ title: '📄 Show Filter JSON' }).on('click', () => {
+        const result = {
+            condition: 'AND',
+            rules: queryState.rules.map(r => ({
+                field: r.field,
+                operator: r.operator,
+                value: r.value,
+            })),
+        };
+        console.log(result);
+        alert(JSON.stringify(result, null, 2));
+    });
+    
+
+    // Ensure buttons inside the pane are visible
+    const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
+    Array.from(buttons).forEach(button => {
+
+        button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
+        button.style.position = 'relative';  // Fixed position for the container
+
+    });
+
 };
 
 function iterateSceneR(object, callback) {
@@ -819,22 +1007,21 @@ export function setSplinesUniform(rqt)
             object.setTimeLimitMax(limitT_Max);
             object.setEnergyLimitMin(limitE_Min);
             object.setEnergyLimitMax(limitE_Max);
-            object.setTEnergyMax(PARAMS.energyCrop);
-            object.setGapSize(PARAMS.gap);
-            object.setFillSize(PARAMS.fill);
+            object.setTEnergyMax(energyCrop);
+            object.setGapSize(gap);
+            object.setFillSize(fill);
             object.setWidth(trackWidth);
             
-            if(!PARAMS.animation)
+            if(!animation)
                 object.setAnimationPattern(0.0);
         }
     });
 
-    //console.log("scene test", rqt);
-
-    rqt.RP_Splines_Lighting_mat.setUniform("light_ambient", PARAMS.light_ambient);
-    rqt.RP_Splines_Lighting_mat.setUniform("light_diffuse", PARAMS.light_diffuse);
-    rqt.RP_Splines_Lighting_mat.setUniform("light_specular", PARAMS.light_specular);
-    rqt.RP_Splines_Lighting_mat.setUniform("ambientOcc", PARAMS.ambientOcc);
+    
+    rqt.RP_Splines_Lighting_mat.setUniform("light_ambient", light_ambient);
+    rqt.RP_Splines_Lighting_mat.setUniform("light_diffuse", light_diffuse);
+    rqt.RP_Splines_Lighting_mat.setUniform("light_specular", light_specular);
+    rqt.RP_Splines_Lighting_mat.setUniform("ambientOcc", ambientOcc);
 
     if(timeAnimate)
     {
@@ -1440,11 +1627,8 @@ function recursiveTree(array) {
     return getChildren(roots, array);
 }
 
-function loadData() {
+export function loadData() {
 
-        
-
-     
     window.dispatchEvent(new CustomEvent("deleteSplines", { detail: "loadData" }));
 
 
@@ -1459,15 +1643,6 @@ function loadData() {
 
             max_E = data.maxE + 1;
             min_E = data.minE;
-/*
-            minTimePerLevel = [];
-            maxTimePerLevel = [];
-
-            for (let l = 0; l < levels; l++) {
-                minTimePerLevel.push(data.levelsList[l].minTime);
-                maxTimePerLevel.push(data.levelsList[l].maxTime);
-            }
-*/
 
         });
     
@@ -1482,33 +1657,13 @@ function loadData() {
             //console.log("r[0]", r[0]);
             root = tree.parse(r[0]);
 
-
-            //energy_interval = (max_E - min_E) / 3.0;
-/*
-            energy_cut_low_l = min_E;
-            energy_cut_low_h = energy_cut_low_l + energy_interval;
-    
-            energy_cut_med_l = energy_cut_low_h + 1;
-            energy_cut_med_h = energy_cut_med_l + energy_interval;
-    
-            energy_cut_high_l = energy_cut_med_h + 1;
-            energy_cut_high_h = max_E + 1;
-*/
-
-            energy_cut_low_l = 0.0;
-            energy_cut_low_h = 0.1;
-
-            energy_cut_med_l = 0.1;
-            energy_cut_med_h = 1.0;
-
-            energy_cut_high_l = 1.0;
-            energy_cut_high_h = max_E + 1;
-
             limitT_Max = max_T;
             limitT_Min = min_T;
 
             limitE_Max = max_E;
             limitE_Min = min_E;
+
+            initGUI();
 
             getSubTreeAtNode(1);
 
@@ -1529,11 +1684,11 @@ function getSubTreeAtNode(id, pdgFilter = false, pdg = 0) {
         let trackColor = [];
         let trackImportance = [];
 
-        let tracksData_masked = []; tracksData_masked[0] = []; tracksData_masked[1] = []; tracksData_masked[2] = []; tracksData_masked[3] = [];
-        let tracksTime_masked = []; tracksTime_masked[0] = []; tracksTime_masked[1] = []; tracksTime_masked[2] = []; tracksTime_masked[3] = []; 
-        let trackEnergy_masked = []; trackEnergy_masked[0] = []; trackEnergy_masked[1] = []; trackEnergy_masked[2] = []; trackEnergy_masked[3] = [];
-        let trackColor_masked = []; trackColor_masked[0] = []; trackColor_masked[1] = []; trackColor_masked[2] = []; trackColor_masked[3] = [];
-        let trackImportance_masked = []; trackImportance_masked[0] = []; trackImportance_masked[1] = []; trackImportance_masked[2] = []; trackImportance_masked[3] = [];
+        let tracksData_masked = []; tracksData_masked[0] = []; tracksData_masked[1] = []; tracksData_masked[2] = []; tracksData_masked[3] = []; tracksData_masked[4] = [];
+        let tracksTime_masked = []; tracksTime_masked[0] = []; tracksTime_masked[1] = []; tracksTime_masked[2] = []; tracksTime_masked[3] = []; tracksTime_masked[4] = [];
+        let trackEnergy_masked = []; trackEnergy_masked[0] = []; trackEnergy_masked[1] = []; trackEnergy_masked[2] = []; trackEnergy_masked[3] = []; trackEnergy_masked[4] = [];
+        let trackColor_masked = []; trackColor_masked[0] = []; trackColor_masked[1] = []; trackColor_masked[2] = []; trackColor_masked[3] = []; trackColor_masked[4] = [];
+        let trackImportance_masked = []; trackImportance_masked[0] = []; trackImportance_masked[1] = []; trackImportance_masked[2] = []; trackImportance_masked[3] = []; trackImportance_masked[4] = [];
 
         
         window.dispatchEvent(new CustomEvent("deleteSplines", { detail: "getSubTreeAtNode" }));
@@ -1574,23 +1729,25 @@ function getSubTreeAtNode(id, pdgFilter = false, pdg = 0) {
                 trackEnergy.push(node.model.energy_end);
                 trackEnergy.push(0.0);
 
-                let importance = 3.0;
+                let importance = 5.0;
 
-                if(node.model.energy_beg >= energy_cut_low_l && node.model.energy_beg < (energy_cut_low_h + 1))
-                    {importance = 2.0;
-                    //console.log("track id high", node.model.id);
-                }
-                else if(node.model.energy_beg >= energy_cut_med_l && node.model.energy_beg < (energy_cut_med_h + 1))
-                    {importance = 1.0;
-                    //console.log("track id", node.model.id);
-                }
-                else if(node.model.energy_beg >= energy_cut_high_l && node.model.energy_beg < (energy_cut_high_h + 1))
+                if(PARAMS.cluster0 && node.model.energy_beg >= PARAMS.energyIntervalCluster0.min && node.model.energy_beg < (PARAMS.energyIntervalCluster0.max))
                     {importance = 0.0;
-                    //console.log("track id", node.model.id);
+                }
+                else if(PARAMS.cluster1 && node.model.energy_beg >= PARAMS.energyIntervalCluster1.min && node.model.energy_beg < (PARAMS.energyIntervalCluster1.max))
+                    {importance = 1.0;
+                }
+                else if(PARAMS.cluster2 && node.model.energy_beg >= PARAMS.energyIntervalCluster2.min && node.model.energy_beg < (PARAMS.energyIntervalCluster2.max))
+                    {importance = 2.0;
                     }
+                else if (PARAMS.cluster3 && node.model.energy_beg >= PARAMS.energyIntervalCluster3.min && node.model.energy_beg < (PARAMS.energyIntervalCluster3.max)) {
+                    importance = 3.0;
+                }
+                else if (PARAMS.cluster4 && node.model.energy_beg >= PARAMS.energyIntervalCluster4.min && node.model.energy_beg < (PARAMS.energyIntervalCluster4.max)) {
+                    importance = 4.0;
+                }
                 else 
-                    {importance = 3.0;
-                    //console.log("energytest", node.model.energy_beg);
+                    {importance = 4.0;
                 }
 
                 trackImportance.push(importance);
@@ -1643,7 +1800,7 @@ function getSubTreeAtNode(id, pdgFilter = false, pdg = 0) {
         limitT_Min_Animation = min_T;
         limitT_Max_Animation = max_T;
 
-        //console.log("trackImportance", trackImportance, trackImportance_masked[0], trackImportance_masked[1], trackImportance_masked[2], trackImportance_masked[3]);
+        console.log("trackImportance", trackImportance_masked[0], trackImportance_masked[1], trackImportance_masked[2], trackImportance_masked[3], trackImportance_masked[4]);
 
         lineStrip = new RC.ZSplines(
             tracksData,
@@ -1670,76 +1827,32 @@ function getSubTreeAtNode(id, pdgFilter = false, pdg = 0) {
         lineStrip.drawOutline = false;
         lineStrip.material.transparent = false;
 
-        splineCluster0 = new RC.ZSplines(
-            tracksData_masked[2],
-            tracksTime_masked[2],
-            trackEnergy_masked[2],
-            samplePerTrack,
-            trackWidth,
-            limitT_Min,
-            limitT_Max,
-            trackColor_masked[2],
-            trackImportance_masked[2], true);
 
-        //console.log(`Resuilts: GPUMemory [${RC.Texture.gpuMemory} MB]`);
+        for(let i=0; i<5; i++)
+        {
 
-        //console.log("Resuilts: Number of tracks", tracksData.length/12, "Number of total vertices", ((samplePerTrack * 2) + 2) * tracksData.length/12);
+            splineCluster[i] = new RC.ZSplines(
+                tracksData_masked[4-i],
+                tracksTime_masked[4-i],
+                trackEnergy_masked[4-i],
+                samplePerTrack,
+                trackWidth,
+                limitT_Min,
+                limitT_Max,
+                trackColor_masked[4-i],
+                trackImportance_masked[4-i], true);
+    
+    
+            splineCluster[i].position.set(0, 0, 0);                                                                                 
+            splineCluster[i].scale.set(scale, scale, scale);
+            splineCluster[i].setAnimationPattern(0.0);
+            splineCluster[i].setColors(colors);
+            splineCluster[i].drawOutline = false;
+            splineCluster[i].material.transparent = false;
+            splineCluster[i].visible = false;
+        }
 
-
-
-        splineCluster0.position.set(0, 0, 0);
-                                                                                        
-        splineCluster0.scale.set(scale, scale, scale);
-        splineCluster0.setAnimationPattern(0.0);
-        splineCluster0.setColors(colors);
-        splineCluster0.drawOutline = false;
-        splineCluster0.material.transparent = false;
-        splineCluster0.visible = false;								
-
-        //console.log("splineCluster1", tracksData_masked[2], tracksData_masked[0]);
-
-
-        splineCluster1 = new RC.ZSplines(
-            tracksData_masked[1],
-            tracksTime_masked[1],
-            trackEnergy_masked[1],
-            samplePerTrack,
-            trackWidth,
-            limitT_Min,
-            limitT_Max,
-            trackColor_masked[1],
-            trackImportance_masked[1], true);
-
-        splineCluster1.position.set(0, 0, 0);
-                                                                                        
-        splineCluster1.scale.set(scale, scale, scale);
-        splineCluster1.setAnimationPattern(0.0);
-        splineCluster1.setColors(colors);
-        splineCluster1.drawOutline = false;
-        splineCluster1.material.transparent = false;
-        splineCluster1.visible = false;										
-                                                                
-        splineCluster2 = new RC.ZSplines(
-            tracksData_masked[0],
-            tracksTime_masked[0],
-            trackEnergy_masked[0],
-            samplePerTrack,
-            trackWidth,
-            limitT_Min,
-            limitT_Max,
-            trackColor_masked[0],
-            trackImportance_masked[0], true);
-
-        splineCluster2.position.set(0, 0, 0);
-                                                                                        
-        splineCluster2.scale.set(scale, scale, scale);
-        splineCluster2.setAnimationPattern(0.0);
-        splineCluster2.setColors(colors);
-        splineCluster2.drawOutline = false;
-        splineCluster2.material.transparent = false;
-        splineCluster2.visible = false;									
-
-        window.dispatchEvent(new CustomEvent("AddSplines", { detail: [lineStrip, splineCluster2, splineCluster1, splineCluster0]}));
+        window.dispatchEvent(new CustomEvent("AddSplines", { detail: [lineStrip, splineCluster[4], splineCluster[3], splineCluster[2], splineCluster[1], splineCluster[0]]}));
                                                                 
     }
      

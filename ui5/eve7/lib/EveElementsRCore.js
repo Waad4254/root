@@ -957,7 +957,7 @@ sap.ui.define(['rootui5/eve7/lib/EveManager'], function (EveManager)
 
       console.log("shower data", shower, "rnr_data", rnr_data);
 
-         
+         /*
          let lineStrip = new RC.ZSplines(
             shower.fPoints,
             shower.fTime,
@@ -989,7 +989,8 @@ sap.ui.define(['rootui5/eve7/lib/EveManager'], function (EveManager)
 
       console.log("shower data lineStrip", lineStrip);
 
-      return lineStrip;
+      return lineStrip;*/
+      return null;
       }
 
 

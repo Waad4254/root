@@ -87,11 +87,11 @@ sap.ui.define([
                   console.log("GlViewerRCore.onInit - SplinesController.js loaded");
                
                SPLINES_CONT = module;
-               SPLINES_CONT.initGUI();
+               SPLINES_CONT.loadData();
                SPLINES_CONT.setSchematicView();
             });
          } else {
-            SPLINES_CONT.initGUI();
+            SPLINES_CONT.loadData();
             SPLINES_CONT.setSchematicView();
          }
       }
@@ -431,23 +431,33 @@ sap.ui.define([
      });
 
          window.addEventListener("deleteSplines", (event) => {
-            console.log("deleteSplines");
-
-            iterateSceneR(this.rqt.scene, function(object){
-               if (object instanceof RC.ZSplines ){
-                  console.log("deleteSplines if", object);
-                  object.parent.remove(object);
-               }
-           });
 
          });
 
          window.addEventListener("AddSplines", (event) => {
             console.log("AddSplines", event.detail);
+
+            let objects = [];
+
+            iterateSceneR(this.rqt.scene, function(object){
+               if (object instanceof RC.ZSplines ){
+                  objects.push(object);
+               }
+           });
+
+           for(let i = 0; i<objects.length; i++)
+           {
+            this.rqt.scene.remove(objects[i])
+           }
+
+           console.log("deleteSplines", this.rqt.scene.children);
+
             this.rqt.scene.add(event.detail[0]);
             this.rqt.scene.add(event.detail[1]);
             this.rqt.scene.add(event.detail[2]);
             this.rqt.scene.add(event.detail[3]);
+            this.rqt.scene.add(event.detail[4]);
+            this.rqt.scene.add(event.detail[5]);
 
             this.request_render();
          });
@@ -791,7 +801,7 @@ sap.ui.define([
 
          if(this.IOR)
          {
-            this.rqt.render_Splines_IOR_and_blend_it(3);
+            this.rqt.render_Splines_IOR_and_blend_it(5);
          }
          else 
          {
