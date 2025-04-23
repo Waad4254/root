@@ -151,6 +151,7 @@ export function initGUI() {
 
         radius: 3,
         sigma: 1,
+        rules: {}
     };
 
     const performanceFolder = pane.addFolder({
@@ -211,15 +212,8 @@ export function initGUI() {
         .on('change', (ev) => {
             cluster0Folder.hidden = !cluster0Folder.hidden;
             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);   
+            getSubTreeAtNode(1);
+                    
         });
 
         masksFolder.addBinding( PARAMS, 'cluster1',
@@ -227,15 +221,7 @@ export function initGUI() {
         .on('change', (ev) => {
             cluster1Folder.hidden = !cluster1Folder.hidden;
             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);    
+            getSubTreeAtNode(1);   
         });
 
         masksFolder.addBinding( PARAMS, 'cluster2',
@@ -243,15 +229,7 @@ export function initGUI() {
         .on('change', (ev) => {
             cluster2Folder.hidden = !cluster2Folder.hidden;
             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);    
+            getSubTreeAtNode(1);   
         });
 
         masksFolder.addBinding( PARAMS, 'cluster3',
@@ -259,15 +237,7 @@ export function initGUI() {
         .on('change', (ev) => {
             cluster3Folder.hidden = !cluster3Folder.hidden;
             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);   
+            getSubTreeAtNode(1);  
         });
 
         masksFolder.addBinding( PARAMS, 'cluster4',
@@ -275,50 +245,8 @@ export function initGUI() {
         .on('change', (ev) => {
             cluster4Folder.hidden = !cluster4Folder.hidden;
             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);   
+            getSubTreeAtNode(1);  
         });
-/*
-        masksFolder.addBlade({
-            view: 'list',
-            label: 'Masks',
-            options: [
-              {text: 'low', value: 'mask_low'},
-              {text: 'medium', value: 'mask_medium'},
-              {text: 'high', value: 'mask_high'},
-              {text: 'scene', value: 'scene'},
-            ],
-            value: 'scene',
-          }).on('change', (ev) => {
-
-              if (ev.value == 'mask_low') {
-                  
-                   finalColorTex = "imp2_blur";
-              }
-              else if (ev.value == 'mask_medium') {
-                  
-                   finalColorTex = "imp1_blur"
-              }
-          else if (ev.value == 'mask_high') {
-                 
-                   finalColorTex = "imp0_blur";
-              }
-              else
-                   finalColorTex = "showerColor";
-
-
-        });
-
-*/
-
-
 
     const cluster0Folder = masksFolder.addFolder({
         title: 'Cluster0 Settings',
@@ -346,144 +274,229 @@ export function initGUI() {
         hidden: false,
     });
 
-    cluster0Folder.addBinding( PARAMS, 'energyIntervalCluster0', {
-            min: -1.0,
-            max:  max_E + 1,
-            step: 0.0001,
-            label: 'Cluster0'
-        }).on('change', (ev) => {
+    cluster0Folder.addBinding(PARAMS, 'clusterColor0', {
+        color: { type: 'float' },
+    }).on('change', (ev) => {
 
-             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+        window.dispatchEvent(new CustomEvent("clusterColor", { detail: [0, ev.value] }));
 
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);
-                 
+    });
+
+
+    cluster1Folder.addBinding(PARAMS, 'clusterColor1', {
+        color: { type: 'float' },
+    }).on('change', (ev) => {
+
+        window.dispatchEvent(new CustomEvent("clusterColor", { detail: [1, ev.value] }));
+
+    });
+
+
+
+    cluster2Folder.addBinding(PARAMS, 'clusterColor2', {
+        color: { type: 'float' },
+    }).on('change', (ev) => {
+
+        window.dispatchEvent(new CustomEvent("clusterColor", { detail: [2, ev.value] }));
+
+    });
+
+
+
+    cluster3Folder.addBinding(PARAMS, 'clusterColor3', {
+        color: { type: 'float' },
+    }).on('change', (ev) => {
+
+        window.dispatchEvent(new CustomEvent("clusterColor", { detail: [3, ev.value] }));
+
+    });
+
+
+    cluster4Folder.addBinding(PARAMS, 'clusterColor4', {
+        color: { type: 'float' },
+    }).on('change', (ev) => {
+
+        window.dispatchEvent(new CustomEvent("clusterColor", { detail: [4, ev.value] }));
+
+    });
+
+    // Define the fields object with energy, charge, and distance
+
+    const fields = {
+        charge: 'charge',
+        energy_beg: 'energy_beg',
+        energy_end: 'energy_end',
+        pdg: 'pdg',
+        mass: 'mass',
+        time_beg: 'time_beg',
+        time_end: 'time_end',
+        //distance: 'distance',
+    };
+
+    const operators = {
+        equals: 'equals',
+        'greater than': 'greater than',
+        'less than': 'less than',
+        between: 'between', // Added the "between" operator
+    };
+
+    // Place the updated code for rule handling here
+    const clusters = [
+        { clusterId: 0, folder: cluster0Folder },
+        { clusterId: 1, folder: cluster1Folder },
+        { clusterId: 2, folder: cluster2Folder },
+        { clusterId: 3, folder: cluster3Folder },
+        { clusterId: 4, folder: cluster4Folder }
+    ];
+
+    clusters.forEach(({ clusterId, folder }) => {
+        const ruleState = {
+            rules: [],
+        };
+        function addRule(clusterId) {
+            const rule = {
+                field: 'energy_beg', // Set the field to 'energy'
+                operator: 'between',  // Set the operator to 'between'
+                value: PARAMS[`energyIntervalCluster${clusterId}`].min,  // Use the min value for the 'value'
+                valueTo: PARAMS[`energyIntervalCluster${clusterId}`].max, // Use the max value for the 'valueTo'
+                clusterId: clusterId  // Include the clusterId in the rule
+            };
+
+            // Initialize the rules array for the cluster if not yet initialized
+            if (!PARAMS.rules[clusterId]) {
+                PARAMS.rules[clusterId] = [];
+            }
+
+            PARAMS.rules[clusterId].push(rule);
+
+            ruleState.rules.push(rule);
+
+            const ruleFolder = folder.addFolder({
+                title: `Rule ${ruleState.rules.length}`,
+                expanded: true,
+            });
+
+            ruleFolder.addBinding(rule, 'field', {
+                options: fields,
+                label: 'Field',
+            }).on('change', (ev) => {
+                rule.field = ev.value;
+                // Update the rule in PARAMS.rules when the field changes
+                const clusterRules = PARAMS.rules[clusterId];
+                const ruleIndex = clusterRules.findIndex(r => r === rule);
+                if (ruleIndex !== -1) {
+                    clusterRules[ruleIndex].field = ev.value;
+                }
+
+                getSubTreeAtNode(1);
+            });
+
+            ruleFolder.addBinding(rule, 'operator', {
+                options: operators,
+                label: 'Operator',
+            }).on('change', (ev) => {
+                // Show or hide the 'valueTo' field based on the selected operator
+                if (rule.operator === 'between') {
+                    // Only show 'valueTo' when 'between' operator is selected
+                    valueToBinding.hidden = false;
+                } else {
+                    valueToBinding.hidden = true;
+                }
+                rule.operator = ev.value; 
+
+                // Update the rule in PARAMS.rules when the operator changes
+                const clusterRules = PARAMS.rules[clusterId];
+                const ruleIndex = clusterRules.findIndex(r => r === rule);
+                if (ruleIndex !== -1) {
+                    clusterRules[ruleIndex].operator = ev.value;
+                }
+
+                getSubTreeAtNode(1);
+            });
+
+            ruleFolder.addBinding(rule, 'value', {
+                label: 'Value',
+            }).on('change', (ev) => {
+                rule.value = ev.value;  // Update the rule value with the input value
+
+                // Update the rule in PARAMS.rules when the value changes
+                const clusterRules = PARAMS.rules[clusterId];
+                const ruleIndex = clusterRules.findIndex(r => r === rule);
+                if (ruleIndex !== -1) {
+                    clusterRules[ruleIndex].value = ev.value;
+                }
+                getSubTreeAtNode(1);
+            });
+
+            const valueToBinding = ruleFolder.addBinding(rule, 'valueTo', {
+                label: 'Value (To)', // Only relevant if the operator is "between"
+            }).on('change', (ev) => {
+                rule.valueTo = ev.value;  // Update the rule valueTo with the input value
+
+                // Update the rule in PARAMS.rules when the valueTo changes
+                const clusterRules = PARAMS.rules[clusterId];
+                const ruleIndex = clusterRules.findIndex(r => r === rule);
+                if (ruleIndex !== -1) {
+                    clusterRules[ruleIndex].valueTo = ev.value;
+                }
+                getSubTreeAtNode(1);
+            });
+
+            ruleFolder.addButton({ label: 'Remove', title: 'Remove' }).on('click', () => {
+                folder.remove(ruleFolder);
+                const idx = ruleState.rules.indexOf(rule);
+                if (idx > -1) ruleState.rules.splice(idx, 1);
+                const globalIdx = PARAMS.rules[clusterId].indexOf(rule);
+                if (globalIdx > -1) PARAMS.rules[clusterId].splice(globalIdx, 1); // Remove the rule from PARAMS.rules[clusterId]
+
+                getSubTreeAtNode(1);    
+
+            });
+
+            // Ensure buttons inside the pane are visible
+            const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
+            Array.from(buttons).forEach(button => {
+
+                button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
+                button.style.position = 'relative';  // Fixed position for the container
+
+            });
+        }
+
+        // Add button to add more rules
+        folder.addButton({ title: 'Add Rule' }).on('click', () => addRule(clusterId)
+        );
+
+        folder.addButton({ title: '📄 Show Filter JSON' }).on('click', () => {
+            const result = {
+                condition: 'AND',
+                rules: ruleState.rules.map(r => ({
+                    field: r.field,
+                    operator: r.operator,
+                    value: r.value,
+                    valueTo: r.valueTo, // Include the second value for "between"
+                })),
+            };
+            console.log(result);
+            alert(JSON.stringify(result, null, 2));
         });
 
-        cluster0Folder.addBinding(PARAMS, 'clusterColor0', {
-            color: {type: 'float'},
-          }).on('change', (ev) => {
+        // Add initial rule
+        addRule(clusterId);
+        
+    });
 
-            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [0, ev.value] }));
-            
-          });
+    // Ensure buttons inside the pane are visible
+    const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
+    Array.from(buttons).forEach(button => {
 
-          cluster1Folder.addBinding( PARAMS, 'energyIntervalCluster1', {
-            min: -1.0,
-            max:  max_E + 1,
-            step: 0.0001,
-            label: 'Cluster1'
-        }).on('change', (ev) => {
+        button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
+        button.style.position = 'relative';  // Fixed position for the container
 
-             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+    });
 
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);
-                 
-        });
-        cluster1Folder.addBinding(PARAMS, 'clusterColor1', {
-            color: {type: 'float'},
-          }).on('change', (ev) => {
 
-            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [1, ev.value] }));
-            
-          });
-
-          cluster2Folder.addBinding( PARAMS, 'energyIntervalCluster2', {
-            min: -1.0,
-            max:  max_E + 1,
-            step: 0.0001,
-            label: 'Cluster2'
-        }).on('change', (ev) => {
-
-             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);
-                 
-        });
-
-        cluster2Folder.addBinding(PARAMS, 'clusterColor2', {
-            color: {type: 'float'},
-          }).on('change', (ev) => {
-
-            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [2, ev.value] }));
-
-          });
-
-          cluster3Folder.addBinding( PARAMS, 'energyIntervalCluster3', {
-            min: -1.0,
-            max:  max_E + 1,
-            step: 0.0001,
-            label: 'Cluster3'
-        }).on('change', (ev) => {
-
-             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);
-                 
-        });
-
-        cluster3Folder.addBinding(PARAMS, 'clusterColor3', {
-            color: {type: 'float'},
-          }).on('change', (ev) => {
-
-            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [3, ev.value] }));
-
-          });
-
-          cluster4Folder.addBinding( PARAMS, 'energyIntervalCluster4', {
-            min: -1.0,
-            max:  max_E + 1,
-            step: 0.0001,
-            label: 'Cluster4'
-        }).on('change', (ev) => {
-
-             window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
-
-            if( PARAMS.bySubTree &&  PARAMS.byPDG)
-                 getSubTreeAtNode( PARAMS.subTree, true,  PARAMS.pdg);
-            else if( PARAMS.bySubTree)
-                 getSubTreeAtNode( PARAMS.subTree);
-            else if( PARAMS.byPDG)
-                 getSubTreeAtNode(1, true,  PARAMS.pdg);
-            else
-                 getSubTreeAtNode(1);
-                 
-        });
-
-        cluster4Folder.addBinding(PARAMS, 'clusterColor4', {
-            color: {type: 'float'},
-          }).on('change', (ev) => {
-
-            window.dispatchEvent(new CustomEvent("clusterColor", { detail: [4, ev.value] }));
-
-          });
+    
 
         masksFolder.addBinding( PARAMS, 'radius', {
             min: 1.0,
@@ -882,101 +895,6 @@ pane.addBinding( PARAMS, 'trackWidth',
     .on('change', (ev) => {
          trackWidth = ev.value;
          window.dispatchEvent(new CustomEvent("valueChanged", { detail: trackWidth }));
-
-    });
-
-    const queryBuilderFolder = filteringFolder.addFolder({
-        title: 'Custom Filter Builder',
-        expanded: true,
-    });
-    
-    const queryState = {
-        rules: [],
-    };
-    
-    const fields = {
-        energy: 'energy',
-        time: 'time',
-        pdg: 'pdg',
-    };
-    
-    const operators = {
-        equals: 'equals',
-        'greater than': 'greater than',
-        'less than': 'less than',
-    };
-    
-    function addRule() {
-        const rule = {
-            field: 'energy',
-            operator: 'equals',
-            value: '',
-        };
-    
-        queryState.rules.push(rule);
-    
-        const ruleFolder = queryBuilderFolder.addFolder({
-            title: `Rule ${queryState.rules.length}`,
-            expanded: true,
-        });
-    
-        ruleFolder.addBinding(rule, 'field', {
-            options: fields,
-            label: 'Field',
-        });
-    
-        ruleFolder.addBinding(rule, 'operator', {
-            options: operators,
-            label: 'Operator',
-        });
-    
-        ruleFolder.addBinding(rule, 'value', {
-            label: 'Value',
-        });
-    
-        ruleFolder.addButton({ label: 'Remove', title: 'Remove' }).on('click', () => {
-            queryBuilderFolder.remove(ruleFolder);
-            const idx = queryState.rules.indexOf(rule);
-            if (idx > -1) queryState.rules.splice(idx, 1);
-        });
-
-        // Ensure buttons inside the pane are visible
-        const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
-        Array.from(buttons).forEach(button => {
-
-            button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
-            button.style.position = 'relative';  // Fixed position for the container
-
-        });
-    }
-    
-    
-    // Add initial rule
-    addRule();
-    
-    // ✅ THESE BUTTONS SHOULD BE VISIBLE
-    queryBuilderFolder.addButton({ title: 'Add Rule' }).on('click', () => addRule());
-    
-    queryBuilderFolder.addButton({ title: '📄 Show Filter JSON' }).on('click', () => {
-        const result = {
-            condition: 'AND',
-            rules: queryState.rules.map(r => ({
-                field: r.field,
-                operator: r.operator,
-                value: r.value,
-            })),
-        };
-        console.log(result);
-        alert(JSON.stringify(result, null, 2));
-    });
-    
-
-    // Ensure buttons inside the pane are visible
-    const buttons = document.getElementsByClassName("tp-btnv_b"); // class="tp-btnv_b"
-    Array.from(buttons).forEach(button => {
-
-        button.style.opacity = '1';  // Set the opacity to 1 for full visibility (previously 0)
-        button.style.position = 'relative';  // Fixed position for the container
 
     });
 
@@ -1729,26 +1647,44 @@ function getSubTreeAtNode(id, pdgFilter = false, pdg = 0) {
                 trackEnergy.push(node.model.energy_end);
                 trackEnergy.push(0.0);
 
-                let importance = 5.0;
-
-                if(PARAMS.cluster0 && node.model.energy_beg >= PARAMS.energyIntervalCluster0.min && node.model.energy_beg < (PARAMS.energyIntervalCluster0.max))
-                    {importance = 0.0;
-                }
-                else if(PARAMS.cluster1 && node.model.energy_beg >= PARAMS.energyIntervalCluster1.min && node.model.energy_beg < (PARAMS.energyIntervalCluster1.max))
-                    {importance = 1.0;
-                }
-                else if(PARAMS.cluster2 && node.model.energy_beg >= PARAMS.energyIntervalCluster2.min && node.model.energy_beg < (PARAMS.energyIntervalCluster2.max))
-                    {importance = 2.0;
+                function checkRuleMatch(field, value, operator, valueFrom, valueTo) {
+                    switch (operator) {
+                        case 'equals':
+                            return value === valueFrom;
+                        case 'greater than':
+                            return value > valueFrom;
+                        case 'less than':
+                            return value < valueFrom;
+                        case 'between':
+                            return value >= valueFrom && value <= valueTo;
+                        default:
+                            return false;
                     }
-                else if (PARAMS.cluster3 && node.model.energy_beg >= PARAMS.energyIntervalCluster3.min && node.model.energy_beg < (PARAMS.energyIntervalCluster3.max)) {
-                    importance = 3.0;
                 }
-                else if (PARAMS.cluster4 && node.model.energy_beg >= PARAMS.energyIntervalCluster4.min && node.model.energy_beg < (PARAMS.energyIntervalCluster4.max)) {
-                    importance = 4.0;
+
+                let importance = 4.0;
+                // Loop through each cluster's rules in PARAMS.rules
+                for (let clusterId = 0; clusterId <= 4; clusterId++) {
+                    const clusterRules = PARAMS.rules[clusterId]; // Get rules for the current cluster
+
+                    // Skip the cluster if it has no rules
+                    if (!clusterRules || clusterRules.length === 0) {
+                        continue; // Skip this cluster if it has no rules
+                    }
+
+                    // Check if the node satisfies all rules for this cluster
+                    const nodeMatchesAllRules = clusterRules.every(rule => {
+                        const valueInModel = node.model[rule.field];  // Get the corresponding field from node.model
+                        return checkRuleMatch(rule.field, valueInModel, rule.operator, rule.value, rule.valueTo);
+                    });
+                    
+                    // If all rules for the cluster are matched, set importance based on the cluster
+                    if (nodeMatchesAllRules && PARAMS[`cluster${clusterId}`]) {
+                        importance = clusterId;
+                        break; // Exit the loop once a match is found
+                    }
                 }
-                else 
-                    {importance = 4.0;
-                }
+
 
                 trackImportance.push(importance);
 
