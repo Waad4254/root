@@ -442,7 +442,7 @@ export function initGUI() {
                 getSubTreeAtNode(1);
             });
 
-            ruleFolder.addButton({ label: 'Remove', title: 'Remove' }).on('click', () => {
+            ruleFolder.addButton({title: 'Remove' }).on('click', () => {
                 folder.remove(ruleFolder);
                 const idx = ruleState.rules.indexOf(rule);
                 if (idx > -1) ruleState.rules.splice(idx, 1);
