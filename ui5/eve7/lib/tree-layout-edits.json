@@ -226,7 +226,7 @@
     "data": [
       {
         "name": "tree",
-        "url": "rootui5sys/eve7/lib/output.json",
+        "url": "rootui5sys/eve7/lib/data/output_event_0.json",
         "transform": [
           {"type": "stratify", "key": "id", "parentKey": "parent"},
           {
@@ -474,7 +474,7 @@
       },
       {
         "name": "timeInfo",
-        "url": "rootui5sys/eve7/lib/output-time.json"
+        "url": "rootui5sys/eve7/lib/data/output_event_0_header.json"
       }
     ],
     "scales": [

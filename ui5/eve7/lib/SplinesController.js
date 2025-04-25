@@ -29,7 +29,6 @@ export let limitE_Min = min_E;
 export let animate = false;
 export let colors = true;
 export let animationSpeed = 50;
-export let levels = 0;
 //export let transparent = false
 export let opacity = 1.0;
 export let scale = 12;
@@ -70,6 +69,7 @@ export let animation = false;
 export let energyCrop = max_E;
 export let gap = 1;
 export let fill = 2;
+export let dataFile = 'output_event_0';
 
 export function initGUI() {
     console.log("GUI Initialized!");
@@ -167,6 +167,48 @@ export function initGUI() {
         rows: 4,
         min: 30,
         max: 130,
+    });
+
+    const dataFolder = pane.addFolder({
+        title: 'Data Settings',
+        expanded: false,
+        hidden: false,
+    });
+
+    dataFolder.addBlade({
+        view: 'list',
+        label: 'Events Data',
+        options: [
+          {text: 'Event0', value: 'output_event_0'},
+          {text: 'Event1', value: 'output_event_1'},
+          {text: 'Event2', value: 'output_event_2'},
+          {text: 'Event3', value: 'output_event_3'},
+          {text: 'Event4', value: 'output_event_4'},
+          {text: 'Event5', value: 'output_event_5'},
+          {text: 'Event6', value: 'output_event_6'},
+          {text: 'Event7', value: 'output_event_7'},
+          {text: 'Event8', value: 'output_event_8'},
+          {text: 'Event9', value: 'output_event_9'},
+          {text: 'Event10', value: 'output_event_10'},
+          {text: 'Event11', value: 'output_event_11'},
+          {text: 'Event12', value: 'output_event_12'},
+          {text: 'Event13', value: 'output_event_13'},
+          {text: 'Event14', value: 'output_event_14'},
+          {text: 'Event15', value: 'output_event_15'},
+          {text: 'Event16', value: 'output_event_16'},
+          {text: 'Event17', value: 'output_event_17'},
+          {text: 'Event18', value: 'output_event_18'},
+          {text: 'Event19', value: 'output_event_19'}
+        ],
+        value: dataFile,
+      }).on('change', (ev) => {
+          console.log("dataFile", dataFile,ev.value );
+          dataFile = ev.value;  
+          window.dispatchEvent(new CustomEvent("deleteSplines", { detail: ev }));
+          loadData();    
+          
+          initVega();
+
     });
 
     const filteringFolder = pane.addFolder({
@@ -1551,28 +1593,32 @@ export function loadData() {
 
 
     // Load json file that contains time information [min/max] per level
-    fetch('rootui5sys/eve7/lib/output-time.json')
+    console.log("Loading output-time.json");
+
+    fetch(`rootui5sys/eve7/lib/data/${dataFile}_header.json`)
         .then((response) => response.json())
         .then(data => {
 
-            levels = data.levels;
             max_T = data.max;
             min_T = data.min;
 
             max_E = data.maxE + 1;
             min_E = data.minE;
 
+            console.log("output-time.json Data loaded");
+
         });
     
 
-    fetch('rootui5sys/eve7/lib/output.json')
+    console.log("Loading output.json");
+    fetch(`rootui5sys/eve7/lib/data/${dataFile}.json`)
         .then((response) => response.json())
         .then(data => {
            
 
             // creating the tree data structure 
             var r = recursiveTree(data);
-            //console.log("r[0]", r[0]);
+            console.log("r[0]", r[0]);
             root = tree.parse(r[0]);
 
             limitT_Max = max_T;
@@ -1584,6 +1630,8 @@ export function loadData() {
             initGUI();
 
             getSubTreeAtNode(1);
+
+            console.log("output.json Data loaded");
 
         });
 }

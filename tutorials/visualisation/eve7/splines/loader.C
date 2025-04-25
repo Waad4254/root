@@ -1,0 +1,14 @@
+TFile *f = nullptr;
+TTree *T = nullptr;
+
+void loader(const char *fname="TwoParticles-20evs.root")
+{
+  gSystem->Load("libRootG4Snitch.so");
+  f = TFile::Open(fname);
+  T = (TTree*) f->Get("T");
+
+  // Need two-level initialization as dictionaries need to be loaded before
+  // processing of code that uses G4S types.
+  //gROOT->LoadMacro("dumper.C");
+  gROOT->LoadMacro("shower.C");
+}

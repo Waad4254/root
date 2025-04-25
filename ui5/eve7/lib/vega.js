@@ -19,6 +19,8 @@ var view;
 let contextMenu = document.getElementById("context-menu");
 let scope = document.querySelector("body");
 
+import {dataFile} from "./SplinesController.js"
+
 export function initVega() {
 
     contextMenu = document.getElementById("context-menu");
@@ -29,7 +31,10 @@ export function initVega() {
         .then(spec => {
 
             //console.log("spec", spec);
+            console.log("dataFile value:", spec.data[spec.data.length - 1].url);
+            spec.data[0].url = `rootui5sys/eve7/lib/data/${dataFile}.json`;
 
+            spec.data[spec.data.length - 1].url = `rootui5sys/eve7/lib/data/${dataFile}_header.json`;  // For timeInfo data
             runtime = vega.parse(spec); // may throw an Error if parsing fails
             view = new vega.View(runtime)
                 .logLevel(vega.Warn) // set view logging level

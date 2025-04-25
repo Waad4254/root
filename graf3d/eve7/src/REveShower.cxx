@@ -80,7 +80,7 @@ Int_t REveShower::WriteCoreJson(nlohmann::json &j, Int_t rnr_offset)
    /*Int_t fNDiv;
    Double_t fTrackWidth;
    Double_t fSamples;
-   Double_t fMinTime;
+   Double_t fMinTime; 
    Double_t fMaxTime;
    Int_t fLevel;
    std::vector<Double_t> fPoints;
