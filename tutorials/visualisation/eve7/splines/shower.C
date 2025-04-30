@@ -195,29 +195,29 @@ void shower()
 
            // Positions
            particleJson["position_beg"] = {
-               (pvec[i].m_x_beg.fX - pvec[1].m_x_beg.fX - minVals[0]) / (maxVals[0] - minVals[0]),
-               (pvec[i].m_x_beg.fY - pvec[1].m_x_beg.fY - minVals[1]) / (maxVals[1] - minVals[1]),
-               (pvec[i].m_x_beg.fZ - pvec[1].m_x_beg.fZ - minVals[2]) / (maxVals[2] - minVals[2])
+               (pvec[i].m_x_beg.fX - pvec[1].m_x_beg.fX),
+               (pvec[i].m_x_beg.fY - pvec[1].m_x_beg.fY),
+               (pvec[i].m_x_beg.fZ - pvec[1].m_x_beg.fZ) 
            };
 
            particleJson["position_end"] = {
-               (pvec[i].m_x_end.fX - pvec[1].m_x_end.fX - minVals[6]) / (maxVals[6] - minVals[6]),
-               (pvec[i].m_x_end.fY - pvec[1].m_x_end.fY - minVals[7]) / (maxVals[7] - minVals[7]),
-               (pvec[i].m_x_end.fZ - pvec[1].m_x_end.fZ - minVals[8]) / (maxVals[8] - minVals[8])
+               (pvec[i].m_x_end.fX - pvec[1].m_x_end.fX),
+               (pvec[i].m_x_end.fY - pvec[1].m_x_end.fY),
+               (pvec[i].m_x_end.fZ - pvec[1].m_x_end.fZ)
            };
 
            // Size, tangents, time, etc.
            particleJson["size"] = 1983;
            particleJson["tangent_beg"] = {
-               (pvec[i].m_p_beg.fX - minVals[3]) / (maxVals[3] - minVals[3]),
-               (pvec[i].m_p_beg.fY - minVals[4]) / (maxVals[4] - minVals[4]),
-               (pvec[i].m_p_beg.fZ - minVals[5]) / (maxVals[5] - minVals[5])
+               (pvec[i].m_p_beg.fX),
+               (pvec[i].m_p_beg.fY),
+               (pvec[i].m_p_beg.fZ)
            };
 
            particleJson["tangent_end"] = {
-               (pvec[i].m_p_end.fX - minVals[9]) / (maxVals[9] - minVals[9]),
-               (pvec[i].m_p_end.fY - minVals[10]) / (maxVals[10] - minVals[10]),
-               (pvec[i].m_p_end.fZ - minVals[11]) / (maxVals[11] - minVals[11])
+               (pvec[i].m_p_end.fX),
+               (pvec[i].m_p_end.fY),
+               (pvec[i].m_p_end.fZ)
            };
 
            particleJson["time_beg"] = pvec[i].m_x_beg.fT;
