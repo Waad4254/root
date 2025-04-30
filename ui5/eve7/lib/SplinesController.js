@@ -31,7 +31,7 @@ export let colors = true;
 export let animationSpeed = 50;
 //export let transparent = false
 export let opacity = 1.0;
-export let scale = 12;
+export let scale = 5;
 export let trackWidth = 0.08;
 export let masked = false;
 export let colorTex;
