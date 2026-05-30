@@ -1,0 +1,5 @@
+WebGui.HttpPort: 9090
+WebGui.RootUi5Path: ~/CMS/root/ui5
+# this otherwise defaults to <path-to-root-build>/ui5
+# Do not pop-up a browser window
+WebEve.DisableShow: 1
